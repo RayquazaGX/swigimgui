@@ -14,10 +14,73 @@ This repo genertates dear imgui bindings to other languages (eg. Lua), by provid
 - imgui 1.84.2
 - Supported languages:
     - [x] Lua
+- Supported backends:
+    - [x] none (You can compile the project without a backend)
+    - [x] glfw_opengl (for demonstrating how to add support for a particular backend. See files in the `backendWrapper` folder.)
+
+## Build ##
+
+This provided build method requires [`xmake`](https://github.com/xmake-io/xmake#installation) and [`SWIG`](http://www.swig.org/download.html) installed.
+
+```sh
+xmake update -s dev # SWIG file support currently requires dev branch of xmake. Will not need this line anymore after xmake publishes a release.
+xmake config --menu # Config the project using a terminal ui. You choose a target language and other options in the menu `Project Configuration`.
+# Or config the project by adding options: xmake config --backend=xxx --language=xxx [--lua_flavor=xxx]
+xmake               # Build with saved configs.
+```
 
 ## Example ##
 
-    //TODO
+### Lua ###
+
+```lua
+
+-- To run this example, you need to config and build with a backend, eg.:
+--   ```sh
+--   xmake update -s dev
+--   xmake config --backend="glfw_opengl3" --language="lua" --lua_flavor="luajit"
+--   xmake
+--   ```
+-- Then add the library into search path when starting Lua or LuaJIT. eg.:
+--   ```sh
+--   luajit -e "package.cpath=package.cpath..';./build/linux/x86_64/release/swigimgui_lua.so'" "example.lua"
+--   ```
+
+-- Load the modules from the library.
+local ig = require "imgui"
+local wrapper = require "imgui_backendWrapper"
+local showDemo = true
+
+-- Create a ImGui and backend context by initializing a window.
+wrapper.InitWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example")
+
+-- Main loop.
+while not wrapper.WindowShouldClose() do
+
+    -- Begin a new backend rendering frame.
+    wrapper.FrameBegin()
+
+    -- Do any ImGui or backend stuffs.
+    if showDemo then
+        showDemo = ig.ShowDemoWindow(showDemo)
+    end
+    ig.Begin("Hello, world!")
+    ig.Text("This is some useful text.")
+    ig.End()
+
+    -- Apply and render the ImGui draw list, and end the frame.
+    wrapper.FrameEnd()
+end
+
+-- Destroy the ImGui and backend context.
+wrapper.Shutdown()
+
+```
+
+## Performance Notes ##
+
+- Because the module contains a large number(hundreds) of symbols binded, for some languages(Lua) a wrapper on top of the generated SWIG module has been added, providing only a small set of symbols when the module imported, and only automatically adding needed symbols on demand, thus saving searching time. See file `imgui.i`.
+    - The original unwrapped module is still accessible in these languages. eg. `imgui.swig` in Lua.
 
 ## Pull Requests are welcomed ##
 
