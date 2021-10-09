@@ -13,7 +13,7 @@ fonts:AddFontFromFileTTF("../../imgui/misc/fonts/ProggyTiny.ttf", 10)
 -- xassert(fonts:AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18, nil, fonts:GetGlyphRangesJapanese()))
 
 local show_demo_window, show_another_window = true, false
-local clear_color = wrapper.GetClearColor()
+local clear_color = ig.ImVec4AsFloatP(wrapper.GetClearColor())
 local f, counter = 0, 0
 local ok
 
@@ -31,7 +31,7 @@ while not wrapper.WindowShouldClose() do
     ok, show_another_window = ig.Checkbox("Another Window", show_another_window)
 
     ok, f = ig.SliderFloat("float", f, 0, 1)
-    ok, clear_color = ig.ColorEdit3("clear color", clear_color)
+    ok = ig.ColorEdit3("clear color", clear_color)
 
     if ig.Button("button") then
         counter = counter + 1
