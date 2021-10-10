@@ -7,15 +7,27 @@
 //     ImVector<> - "You generally do NOT need to care or use this ever. But we need to make it available in imgui.h because some of our public structures are relying on it." (imgui.h)
 //
 //   Ignored functions:
+//     Some operator overrides (`operator new`, `operator delete`)
+//     Functions from nested structures
 //     Obsolete functions and types - "Please keep your copy of dear imgui up to date! Occasionally set '#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS' in imconfig.h to stay ahead." (imgui.h)
-//     Functions taking `va_list` as the last parameter whose names end with `V`. (Other functions taking `va_list` are not ignored.)
+//     Functions taking `va_list` as the last parameter whose names end with `V` (Other functions taking `va_args` are not ignored)
+//
+//   Renamed functions:
+//     All languages: Combo_itemsSeperatedByZeros <- Combo(const char* label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
+//     All languages: Combo_itemsGetter <- Combo(const char* label, int* current_item, bool(*items_getter)(void* data, int idx, const char** out_text), void* data, int items_count, int popup_max_height_in_items = -1);
+//     All languages: ListBox_itemsGetter <- ListBox(const char* label, int* current_item, bool (*items_getter)(void* data, int idx, const char** out_text), void* data, int items_count, int height_in_items = -1);
+//     All languages: GetColorU32_ImU32 <- GetColorU32(ImU32 col);
+//     Lua: Functions whose names are `end`: They are renamed to `c_end` because `end` is a Lua keyword
+//     Lua: Type conversion operators: They are renamed to `toXXX` (`tobool`, `toImU32`, ...)
+//
+//   Shadowed functions:
+//     Lua: Shadowed because float number is preferred: Value(const char*, int), Value(const char*, unsigned int)
+//     Lua: Shadowed because float number is preferred: ImColor::ImColor(int, int, int), ImColor::ImColor(int, int, int, int)
 //
 //   `va_list` related behaviours:
 //    Functions like `void Text(const char* fmt, ...)` are binded using the default behaviour of SWIG, which is, skipping the `...` entirely.
 //    e.g. In Lua, you call `imgui.Text(string.format("%s%d", "This is formatted in Lua instead.", 123))`.
 //    Note that as listed above, functions like `void TextV(const char* fmt, va_list args)` are not binded (ignored) at all.
-//
-//    Lua: Functions whose names are `end`: According to the default behaviour of `SWIG`, they are renamed to `c_end`
 //
 //    Lua: All bindings now should be in Lua style: featuring multi-val return, etc.
 //    eg. `local isShown, isOpened = imgui.Begin("Window", isOpened, flags)`
@@ -43,25 +55,39 @@
 %ignore LogTextV;
 %ignore ImGuiTextBuffer::appendfv;
 
+%ignore operator new(size_t, ImNewWrapper, void*);   // Ignored because SWIG doesn't support this operator
+%ignore operator delete(void*, ImNewWrapper, void*); // Ignored because SWIG doesn't support this operator
+%ignore ImGuiTextFilter::ImGuiTextRange; // Ignored because SWIG doesn't support nested structs
+%ignore ImGuiStorage::ImGuiStoragePair;  // Ignored because SWIG doesn't support nested structs
+#ifdef SWIGLUA
 %ignore Value(const char*, int);          // Always use float version instead
 %ignore Value(const char*, unsigned int); // Always use float version instead
 %ignore ImColor::ImColor(int, int, int);          // Always use float version instead
 %ignore ImColor::ImColor(int, int, int, int);     // Always use float version instead
+%rename(c_end) end;
 %rename(tobool) ImGuiOnceUponAFrame::operator bool;
 %rename(toImU32) ImColor::operator ImU32;
 %rename(toImVec4) ImColor::operator ImVec4;
+#endif
+
+%ignore Selectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0)); // Always use `p_selected` version instead
+%ignore MenuItem(const char* label, const char* shortcut = NULL, bool selected = false, bool enabled = true); // Always use `p_selected` version instead
+%rename(RadioButton_shortcut) RadioButton(const char* label, int* v, int v_button);
+%rename(CollapsingHeader_shortcut) CollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);
+
+%rename(Combo_itemsSeperatedByZeros) Combo(const char* label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
+%rename(Combo_itemsGetter) Combo(const char* label, int* current_item, bool(*items_getter)(void* data, int idx, const char** out_text), void* data, int items_count, int popup_max_height_in_items = -1);
+%rename(ListBox_itemsGetter) ListBox(const char* label, int* current_item, bool (*items_getter)(void* data, int idx, const char** out_text), void* data, int items_count, int height_in_items = -1);
+%rename(GetColorU32_ImU32) GetColorU32(ImU32 col);
 
 %newobject ImGui::GetVersion;
 %newobject ImGui::ImDrawList::CloneOutput;
 
-%ignore Selectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0)); // Always use `p_selected` version instead
-%ignore MenuItem(const char* label, const char* shortcut = NULL, bool selected = false, bool enabled = true); // Always use `p_selected` version instead
-%rename(Combo_itemsSeperatedByZeros) Combo(const char* label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
-%rename(Combo_itemsGetter) Combo(const char* label, int* current_item, bool(*items_getter)(void* data, int idx, const char** out_text), void* data, int items_count, int popup_max_height_in_items = -1);
-%rename(ListBox_itemsGetter) ListBox(const char* label, int* current_item, bool (*items_getter)(void* data, int idx, const char** out_text), void* data, int items_count, int height_in_items = -1);
-
-%rename(RadioButton_shortcut) RadioButton(const char* label, int* v, int v_button);
-%rename(CollapsingHeader_shortcut) CollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);
+%immutable ImGuiIO::IniFilename;
+%immutable ImGuiIO::LogFilename;
+%immutable ImGuiIO::BackendPlatformName;
+%immutable ImGuiIO::BackendRendererName;
+%immutable ImDrawList::_OwnerName;
 
 //------
 // Array type tags
@@ -149,7 +175,7 @@
 %inline %{
     bool _SWIGExtra_IMGUI_CHECKVERSION(){
         return IMGUI_CHECKVERSION();
-    };
+    }
 
     float* ImVec2AsFloatP(ImVec2* vec){
         return (float*) vec;
