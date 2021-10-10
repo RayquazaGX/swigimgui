@@ -12,11 +12,12 @@ This repo genertates dear imgui bindings to other languages (eg. Lua), by provid
 
 - SWIG 4.0.2
 - imgui 1.84.2
+    - [x] `imgui.h`
 - Supported languages:
     - [x] Lua
 - Supported backends:
     - [x] none (You can compile the project without a backend)
-    - [x] glfw_opengl (for demonstrating how to add support for a particular backend. See files in the `backendWrapper` folder.)
+    - [x] `glfw_opengl` (for demonstrating how to add support for a particular backend. See files in the `backendWrapper` folder.)
 
 ## Build ##
 
@@ -81,6 +82,11 @@ wrapper.Shutdown()
 
 - Because the module contains a large number(hundreds) of symbols binded, for some languages(Lua) a wrapper on top of the generated SWIG module has been added, providing only a small set of symbols when the module imported, and only automatically adding needed symbols on demand, thus saving searching time. See file `imgui.i`.
     - The original unwrapped module is still accessible in these languages. eg. `imgui.swig` in Lua.
+- Interops are expensive. Here are some tips to save interop counts:
+    - If a simple struct instance is to be modified many times (eg. C++ `ImVec2` value calculated inside a loop):
+        - It might not be a good idea to use the struct fields directly in complex calculations, because SWIG wraps the getter and setter functions to contain implicit C/C++ <-> script type conversions. Instead, if needed, copy the fields as local types, and after calculations copy back the results to the struct instance.
+        - `ImVec2AsFloatP`, `ImVec4AsFloatP`, `FloatPAsImVec2`, `FloatPAsImVec4` are added as helper functions inside `imgui.swig` and usable for binding target languages.
+    - You can modify the binding file to contain you own C/C++ functions to possibly prevent some interops happen, and generate bindings of them for your need.
 
 ## Pull Requests are welcomed ##
 
