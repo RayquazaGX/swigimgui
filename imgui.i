@@ -35,6 +35,12 @@
 
 %module imgui
 
+%luacode {
+    local _moduleName = "imgui"
+    local _swig = _G[_moduleName]
+    _G[_moduleName] = nil
+}
+
 %{
     #include "imgui.h"
 %}
@@ -199,10 +205,10 @@
 #ifdef SWIGLUA
 %define REG_CONST(type, name)
     %constant type _SWIGExtra_##name = name;
-    %luacode{imgui.name = imgui._SWIGExtra_##name}
+    %luacode{_swig.name = _swig._SWIGExtra_##name}
 %enddef
 %define REG_ALIAS(dest, source)
-    %luacode{imgui.dest = imgui.source}
+    %luacode{_swig.dest = _swig.source}
 %enddef
 #endif
 //floats
@@ -216,17 +222,22 @@ REG_ALIAS(IMGUI_CHECKVERSION, _SWIGExtra_IMGUI_CHECKVERSION)
 //------
 
 %luacode {
-    local _original = imgui
-    local _metatable = getmetatable(_original)
-    local _swig = {}
-    for k, v in pairs(_original) do rawset(_original, k, nil); rawset(_swig, k, v) end
-    local _wrapper = setmetatable(_original, {
+    local _wrapper = {}
+    local _metatable = getmetatable(_swig)
+    for k, v in pairs(_swig) do
+        rawset(_swig, k, nil)
+        rawset(_wrapper, k, v)
+    end
+    _wrapper, _swig = _swig, _wrapper
+    setmetatable(_wrapper, {
         __index = function(t,k)
             local v = _swig[k]
             rawset(t,k,v)
             return v
         end})
-    _wrapper.swig = setmetatable(_swig, _metatable)
+    setmetatable(_swig, _metatable)
+    _wrapper.swig = _swig
+    package.loaded[_moduleName] = _wrapper
 
     do
         local function _mergeSplittedFuncs(name)
