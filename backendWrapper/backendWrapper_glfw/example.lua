@@ -10,7 +10,7 @@ fonts:AddFontFromFileTTF("../../imgui/misc/fonts/Roboto-Medium.ttf", 16)
 fonts:AddFontFromFileTTF("../../imgui/misc/fonts/Cousine-Regular.ttf", 15)
 fonts:AddFontFromFileTTF("../../imgui/misc/fonts/DroidSans.ttf", 16)
 fonts:AddFontFromFileTTF("../../imgui/misc/fonts/ProggyTiny.ttf", 10)
--- xassert(fonts:AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18, nil, fonts:GetGlyphRangesJapanese()))
+-- assert(fonts:AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18, nil, fonts:GetGlyphRangesJapanese()))
 
 local show_demo_window, show_another_window = true, false
 local clear_color = ig.ImVec4AsFloatP(wrapper.GetClearColor())
