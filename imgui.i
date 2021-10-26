@@ -21,8 +21,8 @@
 //     Lua: Type conversion operators: They are renamed to `toXXX` (`tobool`, `toImU32`, ...)
 //
 //   Shadowed functions:
-//     Lua: Shadowed because float number is preferred: Value(const char*, int), Value(const char*, unsigned int)
-//     Lua: Shadowed because float number is preferred: ImColor::ImColor(int, int, int), ImColor::ImColor(int, int, int, int)
+//     Lua: Shadowed because float number is preferred: Value(const char*, int), Value(const char*, unsigned int) are not usable
+//     Lua: Shadowed because float number is preferred: ImColor::ImColor(int, int, int), ImColor::ImColor(int, int, int, int) are not usable
 //
 //   `va_list` related behaviours:
 //    Functions like `void Text(const char* fmt, ...)` are binded using the default behaviour of SWIG, which is, skipping the `...` entirely.
@@ -33,13 +33,19 @@
 //    eg. `local isShown, isOpened = imgui.Begin("Window", isOpened, flags)`
 //
 
+//------
+// Module declaration
+//------
+
 %module imgui
 
+#ifdef SWIGLUA
 %luacode {
     local _moduleName = "imgui"
     local _swig = _G[_moduleName]
     _G[_moduleName] = nil
 }
+#endif
 
 %{
     #include "imgui.h"
@@ -158,6 +164,12 @@
 
 %apply int { size_t };
 
+#ifdef IMGUI_USER_CONFIG
+%include IMGUI_USER_CONFIG
+#endif
+#if !defined(IMGUI_DISABLE_INCLUDE_IMCONFIG_H) || defined(IMGUI_INCLUDE_IMCONFIG_H)
+%include "imconfig.h"
+#endif
 %include "imgui.h"
 
 %clear bool* p_open, bool* p_visible, bool* p_selected;
@@ -221,6 +233,7 @@ REG_ALIAS(IMGUI_CHECKVERSION, _SWIGExtra_IMGUI_CHECKVERSION)
 // Lua wrapper functions
 //------
 
+#ifdef SWIGLUA
 %luacode {
     local _wrapper = {}
     local _metatable = getmetatable(_swig)
@@ -284,3 +297,4 @@ REG_ALIAS(IMGUI_CHECKVERSION, _SWIGExtra_IMGUI_CHECKVERSION)
         end
     end
 }
+#endif

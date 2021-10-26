@@ -22,6 +22,25 @@ option("backend")
     set_values("none", "glfw_opengl3")
 option_end()
 
+option("custom_user_config_enable")
+    set_showmenu(true)
+    set_category("imgui_options/custom_user_config/enable")
+    set_description("See imconfig.h in imgui repo for details. If unsure, set this as `false`.")
+    set_default(false)
+option_end()
+
+option("custom_user_config_includedir")
+    set_showmenu(true)
+    set_category("imgui_options/custom_user_config/includedir")
+    set_default(".")
+option_end()
+
+option("custom_user_config_name")
+    set_showmenu(true)
+    set_category("imgui_options/custom_user_config/name")
+    set_default("my_imgui_config.h")
+option_end()
+
 option("glfw_include")
     set_showmenu(true)
     set_category("imgui_options/glfw_options/glfw_include")
@@ -90,17 +109,25 @@ target("swigimgui_lua")
     end
 
     local imguiDefs = {"-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS"}
-    local swigflags = {"-no-old-metatable-bindings", "-Iimgui", "-Iimgui/backends"}
-    table.join2(swigflags, imguiDefs)
-    table.join2(swigflags, getPlatformDefineSymbols())
+    local swigFlags = {"-no-old-metatable-bindings", "-Iimgui", "-Iimgui/backends"}
+    table.join2(swigFlags, imguiDefs)
+    table.join2(swigFlags, getPlatformDefineSymbols())
 
-    before_build(function()
-        swigflags[#swigflags+1] = "-DSWIGIMGUI_BACKEND_"..get_config("backend")
+    before_build(function(target)
+        swigFlags[#swigFlags+1] = "-DSWIGIMGUI_BACKEND_"..get_config("backend")
+        if has_config("custom_user_config_enable") then
+            local includedirFlag = "-I"..get_config("custom_user_config_includedir")
+            local nameFlag = "-DIMGUI_USER_CONFIG=\""..get_config("custom_user_config_name").."\""
+            target:add("cxflags", includedirFlag)
+            target:add("cxflags", nameFlag)
+            swigFlags[#swigFlags+1] = includedirFlag
+            swigFlags[#swigFlags+1] = nameFlag
+        end
     end)
 
     add_includedirs("imgui")
     add_files("imgui/*.cpp")
-    add_files("imgui.i", {swigflags = swigflags})
+    add_files("imgui.i", {swigflags = swigFlags})
 
     add_includedirs("imgui/backends")
     if is_config("backend", ".*glfw.*") then
@@ -110,12 +137,12 @@ target("swigimgui_lua")
         add_files("imgui/backends/imgui_impl_opengl3.cpp")
     end
 
-    if is_config("backend", "glfw_.*") then
+    if is_config("backend", "glfw.*") then
         add_packages("glfw")
-        swigflags[#swigflags+1] = "-IbackendWrapper/backendWrapper_glfw"
+        swigFlags[#swigFlags+1] = "-IbackendWrapper/backendWrapper_glfw"
         add_includedirs("backendWrapper/backendWrapper_glfw")
         add_files("backendWrapper/backendWrapper_glfw/backendWrapper_$(backend).cpp")
-        add_files("backendWrapper/backendWrapper_glfw/backendWrapper_glfw.i", {swigflags = swigflags})
+        add_files("backendWrapper/backendWrapper_glfw/backendWrapper_glfw.i", {swigFlags = swigFlags})
     else
         -- Can add more backend supports here
     end

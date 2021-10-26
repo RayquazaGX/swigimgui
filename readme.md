@@ -1,8 +1,8 @@
 # swigimgui #
 
-[SWIG](http://www.swig.org/) binding for [Dear Imgui](https://github.com/ocornut/imgui)
+[SWIG](http://www.swig.org/) binding for [Dear ImGui](https://github.com/ocornut/imgui)
 
-This repo genertates dear imgui bindings to other languages (eg. Lua), by providing a `imgui.i` SWIG interface file.
+This repo genertates Dear ImGui bindings to other languages (eg. Lua), by providing a `imgui.i` SWIG interface file.
 
 > SWIG is a software development tool that connects programs written in C and C++ with a variety of high-level programming languages (C#, Java, Lua, Python, Ruby, ...)
 
@@ -12,7 +12,8 @@ This repo genertates dear imgui bindings to other languages (eg. Lua), by provid
 
 - SWIG 4.0.2
 - imgui 1.84.2
-    - [x] `imgui.h`
+    - `imconfig.h` (or customized IMGUI_USER_CONFIG)
+    - `imgui.h`
 - Supported languages:
     - [x] Lua
 - Supported backends:
@@ -24,9 +25,7 @@ This repo genertates dear imgui bindings to other languages (eg. Lua), by provid
 This provided build method requires [`xmake`](https://github.com/xmake-io/xmake#installation) and [`SWIG`](http://www.swig.org/download.html) installed.
 
 ```sh
-xmake update -s dev # SWIG file support currently requires dev branch of xmake. Will not need this line anymore after xmake publishes a release.
 xmake config --menu # Config the project using a terminal ui. You choose a target language and other options in the menu `Project Configuration`.
-# Or config the project by adding options: xmake config --backend=xxx --language=xxx [--lua_flavor=xxx]
 xmake               # Build with saved configs.
 ```
 
@@ -36,9 +35,8 @@ xmake               # Build with saved configs.
 
 ```lua
 
--- To run this example, you need to config and build with a backend, eg.:
+-- To run this example, you need to config and build the repo with a working backend, eg.:
 --   ```sh
---   xmake update -s dev
 --   xmake config --backend="glfw_opengl3" --language="lua" --lua_flavor="luajit"
 --   xmake
 --   ```
