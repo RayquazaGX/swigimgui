@@ -11,7 +11,7 @@ This repo genertates Dear ImGui bindings to other languages (eg. Lua), by provid
 ## Current Status ##
 
 - SWIG 4.0.2
-- imgui 1.84.2
+- ImGui 1.85 master branch
     - `imconfig.h` (or customized IMGUI_USER_CONFIG)
     - `imgui.h`
 - Supported languages:

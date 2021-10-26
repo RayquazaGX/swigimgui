@@ -1,4 +1,4 @@
-// SWIG-4.0.2 binding for Dear Imgui 1.84.2
+// SWIG-4.0.2 binding for Dear ImGui 1.85 master branch
 
 // Notes:
 //
@@ -120,7 +120,7 @@
 %array_functions(ImGuiViewport, ImGuiViewportArray)
 
 //------
-// Typemap tags + Import header
+// Typemap tags + Import the headers
 //------
 
 %include <typemaps.i>
@@ -129,16 +129,20 @@
 %feature("compactdefaultargs");
 %feature("compactdefaultargs", "0") ShowDemoWindow;
 %feature("compactdefaultargs", "0") ShowMetricsWindow;
+%feature("compactdefaultargs", "0") ShowStackToolWindow;
 %feature("compactdefaultargs", "0") ShowAboutWindow;
 %feature("compactdefaultargs", "0") Begin;
 %feature("compactdefaultargs", "0") BeginPopupModal;
 %feature("compactdefaultargs", "0") BeginTabItem;
 
 //-- Split some of the overload functions, so that SWIG can know how many args is for `in` and `argout` typemaps
+// These functions are renamed by suffixing the count of accepted arguments. It is the wrapper on different script languages that decides whether the splitted functions should be glued back together.
 %rename(ShowDemoWindow_0) ShowDemoWindow();
 %rename(ShowDemoWindow_1) ShowDemoWindow(bool*);
 %rename(ShowMetricsWindow_0) ShowMetricsWindow();
 %rename(ShowMetricsWindow_1) ShowMetricsWindow(bool*);
+%rename(ShowStackToolWindow_0) ShowStackToolWindow();
+%rename(ShowStackToolWindow_1) ShowStackToolWindow(bool*);
 %rename(ShowAboutWindow_0) ShowAboutWindow();
 %rename(ShowAboutWindow_1) ShowAboutWindow(bool*);
 %rename(Begin_1) Begin(const char*);
@@ -151,6 +155,7 @@
 %rename(BeginTabItem_2) BeginTabItem(const char*, bool*);
 %rename(BeginTabItem_3) BeginTabItem(const char*, bool*, ImGuiTabItemFlags);
 
+//-- Apply some typemaps and import the headers, then clear the typemaps
 %apply bool* INOUT {bool* p_open, bool* p_visible, bool* p_selected};
 %apply bool* INOUT {bool* v};
 %apply int* INOUT {int* v};
@@ -267,6 +272,7 @@ REG_ALIAS(IMGUI_CHECKVERSION, _SWIGExtra_IMGUI_CHECKVERSION)
         local _data = {
             "ShowDemoWindow",
             "ShowMetricsWindow",
+            "ShowStackToolWindow",
             "ShowAboutWindow",
             "Begin",
             "BeginPopupModal",
