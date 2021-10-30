@@ -222,10 +222,10 @@
 #ifdef SWIGLUA
 %define REG_CONST(type, name)
     %constant type _SWIGExtra_##name = name;
-    %luacode{_swig.name = _swig._SWIGExtra_##name}
+    %luacode %{ _swig[#name] = _swig._SWIGExtra_##name %}
 %enddef
 %define REG_ALIAS(dest, source)
-    %luacode{_swig.dest = _swig.source}
+    %luacode %{ _swig[#dest] = _swig[#source] %}
 %enddef
 #endif
 //floats
@@ -240,32 +240,43 @@ REG_ALIAS(IMGUI_CHECKVERSION, _SWIGExtra_IMGUI_CHECKVERSION)
 
 #ifdef SWIGLUA
 %luacode {
-    local _wrapper = {}
-    local _metatable = getmetatable(_swig)
-    for k, v in pairs(_swig) do
-        rawset(_swig, k, nil)
-        rawset(_wrapper, k, v)
+    package.loaded[_moduleName] = _swig
+
+    local _originals = {}
+    do
+        local copylist = {
+            "ShowDemoWindow_0",
+            "ShowDemoWindow_1",
+            "ShowMetricsWindow_0",
+            "ShowMetricsWindow_1",
+            "ShowStackToolWindow_0",
+            "ShowStackToolWindow_1",
+            "ShowAboutWindow_0",
+            "ShowAboutWindow_1",
+            "Begin_1",
+            "Begin_2",
+            "Begin_3",
+            "BeginPopupModal_1",
+            "BeginPopupModal_2",
+            "BeginPopupModal_3",
+            "BeginTabItem_1",
+            "BeginTabItem_2",
+            "BeginTabItem_3",
+            "RadioButton_shortcut",
+            "CollapsingHeader_shortcut",
+        }
+        for i = 1, #copylist do _originals[copylist[i]] = _swig[copylist[i]] end
     end
-    _wrapper, _swig = _swig, _wrapper
-    setmetatable(_wrapper, {
-        __index = function(t,k)
-            local v = _swig[k]
-            rawset(t,k,v)
-            return v
-        end})
-    setmetatable(_swig, _metatable)
-    _wrapper.swig = _swig
-    package.loaded[_moduleName] = _wrapper
 
     do
         local function _mergeSplittedFuncs(name)
             return function(...)
                 local n = select('#', ...)
                 local resolved = string.format("%s_%d", name, n)
-                if _swig[resolved] then
-                    return _swig[resolved](...)
+                if _originals[resolved] then
+                    return _originals[resolved](...)
                 else
-                    return _swig[name](...)
+                    return _originals[name](...)
                 end
             end
         end
@@ -279,7 +290,7 @@ REG_ALIAS(IMGUI_CHECKVERSION, _SWIGExtra_IMGUI_CHECKVERSION)
             "BeginTabItem",
         }
         for i = 1, #_data do
-            _wrapper[_data[i]] = _mergeSplittedFuncs(_data[i])
+            _swig[_data[i]] = _mergeSplittedFuncs(_data[i])
         end
     end
 
@@ -288,9 +299,9 @@ REG_ALIAS(IMGUI_CHECKVERSION, _SWIGExtra_IMGUI_CHECKVERSION)
             return function(...)
                 local arg = select(argIndex, ...)
                 if type(arg) == thatArgOriginalType then
-                    return _swig[name](...)
+                    return _originals[name](...)
                 else
-                    return _swig[name.."_shortcut"](...)
+                    return _originals[name.."_shortcut"](...)
                 end
             end
         end
@@ -299,7 +310,7 @@ REG_ALIAS(IMGUI_CHECKVERSION, _SWIGExtra_IMGUI_CHECKVERSION)
             "CollapsingHeader", 2, "boolean",
         }
         for i = 1, #_data, 3 do
-            _wrapper[_data[i]] = _mergeShortcutFuncs(_data[i], _data[i+1], _data[i+2])
+            _swig[_data[i]] = _mergeShortcutFuncs(_data[i], _data[i+1], _data[i+2])
         end
     end
 }

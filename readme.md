@@ -78,8 +78,6 @@ wrapper.Shutdown()
 
 ## Performance Notes ##
 
-- Because the module contains a large number(hundreds) of symbols binded, for some languages(Lua) a wrapper on top of the generated SWIG module has been added, providing only a small set of symbols when the module imported, and only automatically adding needed symbols on demand, thus saving searching time. See file `imgui.i`.
-    - The original unwrapped module is still accessible in these languages. eg. `imgui.swig` in Lua.
 - Interops are expensive. Here are some tips to save interop counts:
     - If a simple struct instance is to be modified many times (eg. C++ `ImVec2` value calculated inside a loop):
         - It might not be a good idea to use the struct fields directly in complex calculations, because SWIG wraps the getter and setter functions to contain implicit C/C++ <-> script type conversions. Instead, if needed, copy the fields as local types, and after calculations copy back the results to the struct instance.
