@@ -142,7 +142,7 @@ target("swigimgui_lua")
         swigFlags[#swigFlags+1] = "-IbackendWrapper/backendWrapper_glfw"
         add_includedirs("backendWrapper/backendWrapper_glfw")
         add_files("backendWrapper/backendWrapper_glfw/backendWrapper_$(backend).cpp")
-        add_files("backendWrapper/backendWrapper_glfw/backendWrapper_glfw.i", {swigFlags = swigFlags})
+        add_files("backendWrapper/backendWrapper_glfw/backendWrapper_glfw.i", {swigflags = swigFlags})
     else
         -- Can add more backend supports here
     end
